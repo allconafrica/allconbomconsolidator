@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALLCON - Fastener & BOM Line Consolidator</title>
+  
+  <!-- BOLT / FASTENER FAVICON -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e53935'><path d='M7 2h10l2 4v2H5V6l2-4zm-2 8h14v2H5v-2zm2 4h10v8H7v-8z'/></svg>">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#0d0f12',
+            cardBg: '#14181d',
+            cardBorder: '#232931',
+            allconRed: '#e53935',
+            allconRedHover: '#f44336'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0d0f12;
+      color: #f0f3f6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    input, select, textarea {
+      background-color: #090a0c !important;
+      color: #ffffff !important;
+      border-color: #232931 !important;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #e53935 !important;
+      box-shadow: 0 0 0 1px #e53935;
+    }
+
+    /* Formatted Email Preview Table */
+    .formatted-email-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      color: #ffffff;
+    }
+
+    .formatted-email-table th {
+      background-color: #e53935;
+      color: #ffffff;
+      font-weight: bold;
+      text-align: left;
+      padding: 8px 12px;
+      border: 1px solid #232931;
+    }
+
+    .formatted-email-table td {
+      padding: 8px 12px;
+      border: 1px solid #232931;
+      background-color: #181d24;
+    }
+
+    .formatted-email-table tr:nth-child(even) td {
+      background-color: #14181d;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- HEADER -->
+  <header class="bg-[#14181d] border-b-2 border-allconRed px-6 py-4 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-4">
+        <a href="https://allconafrica.github.io/allcondashboard/" class="flex items-center gap-3 hover:opacity-90 transition">
+          <img src="./ALLCON-Logo.jpg" alt="ALLCON Logo" class="h-10 w-auto rounded object-contain" onerror="this.onerror=null; this.outerHTML='<div class=\'bg-allconRed text-white font-black px-3 py-1 rounded text-xl tracking-wider\'>ALLCON</div>';">
+        </a>
+        <div>
+          <h1 class="text-xl font-black text-white tracking-tight flex items-center gap-2">
+            Fastener & BOM Line Consolidator
+          </h1>
+          <p class="text-xs text-zinc-400">Consolidate Parts Lists & Export Email-Ready Tables</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="https://allconafrica.github.io/allcondashboard/" class="bg-[#1f2630] hover:bg-allconRed text-white text-xs font-bold px-4 py-2.5 rounded-lg border border-cardBorder transition flex items-center gap-2">
+          <i class="fa-solid fa-house text-xs"></i> Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+    <!-- LEFT COLUMN: INPUT SECTION -->
+    <div class="lg:col-span-5 space-y-6">
+
+      <!-- QUICK RAW TEXT / BOM PASTE -->
+      <div class="bg-cardBg border border-cardBorder rounded-xl p-5 shadow-xl">
+        <h2 class="text-sm font-black text-allconRed uppercase tracking-wider mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-paste"></i> 1. Paste Raw Text / BOM
+        </h2>
+        <p class="text-[11px] text-zinc-400 mb-3">Paste raw drawing lines or Excel text to auto-parse items into the list below.</p>
+
+        <textarea id="rawPasteInput" rows="4" placeholder="Example:&#10;M20xP1.75x 100Lg Gr8.8 - 50 OFF&#10;M20xP1.75x 100Lg Gr8.8 - 5 OFF&#10;M16xP2.0x 80Lg Gr8.8 - 20 OFF" class="w-full p-3 rounded-lg border text-xs font-mono"></textarea>
+
+        <button onclick="parseRawText()" class="w-full mt-3 bg-[#1f2630] hover:bg-allconRed text-white font-bold py-2.5 rounded-lg text-xs border border-cardBorder transition uppercase tracking-wider flex items-center justify-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Parse & Merge Into Table
+        </button>
+      </div>
+
+      <!-- ITEM ENTRY FORM -->
+      <div class="bg-cardBg border border-cardBorder rounded-xl p-5 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-sm font-black text-allconRed uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-list"></i> 2. Unconsolidated Line Items
+          </h2>
+          <button onclick="addBlankRow()" class="bg-allconRed hover:bg-allconRedHover text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-plus text-[10px]"></i> Add Item
+          </button>
+        </div>
+
+        <!-- HEADERS -->
+        <div class="grid grid-cols-12 gap-1.5 text-[10px] font-black text-zinc-400 uppercase tracking-wider px-1 mb-2">
+          <div class="col-span-3">Size/Dia</div>
+          <div class="col-span-2">Pitch</div>
+          <div class="col-span-2">Length</div>
+          <div class="col-span-2">Grade</div>
+          <div class="col-span-2 text-center">Qty</div>
+          <div class="col-span-1"></div>
+        </div>
+
+        <!-- INPUT ROWS -->
+        <div class="space-y-2 max-h-[350px] overflow-y-auto pr-1" id="inputRowsContainer">
+          <!-- Dynamic Input Rows inserted here -->
+        </div>
+
+        <button onclick="consolidateItems()" class="w-full mt-4 bg-allconRed hover:bg-allconRedHover text-white font-black py-3 rounded-lg text-sm shadow-lg transition uppercase tracking-wider flex items-center justify-center gap-2">
+          <i class="fa-solid fa-layer-group"></i> Consolidate & Generate Table
+        </button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: CONSOLIDATED OUTPUT TABLE -->
+    <div class="lg:col-span-7 space-y-6">
+
+      <!-- SUMMARY METRICS BAR -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-cardBg border border-cardBorder p-4 rounded-xl text-center">
+          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Raw Input Lines</div>
+          <div class="text-3xl font-black text-white" id="resRawCount">0</div>
+          <div class="text-[10px] text-zinc-400 mt-1">Total entries</div>
+        </div>
+
+        <div class="bg-cardBg border border-cardBorder p-4 rounded-xl text-center">
+          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Consolidated Lines</div>
+          <div class="text-3xl font-black text-emerald-400" id="resUniqueCount">0</div>
+          <div class="text-[10px] text-zinc-400 mt-1">Unique sizes</div>
+        </div>
+
+        <div class="bg-cardBg border border-cardBorder p-4 rounded-xl text-center">
+          <div class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Total Fastener Qty</div>
+          <div class="text-3xl font-black text-allconRed" id="resTotalQty">0</div>
+          <div class="text-[10px] text-zinc-400 mt-1">Combined off count</div>
+        </div>
+      </div>
+
+      <!-- EMAIL-READY OUTPUT PREVIEW -->
+      <div class="bg-cardBg border border-cardBorder rounded-xl p-5 shadow-xl">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 pb-3 border-b border-cardBorder">
+          <div>
+            <h2 class="text-sm font-black text-allconRed uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-envelope-open-text"></i> Consolidated RFQ Output Table
+            </h2>
+            <p class="text-[11px] text-zinc-400">Formatted for instant copy-paste directly into Outlook or Email body.</p>
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <button onclick="copyTableForEmail()" class="flex-1 sm:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center justify-center gap-1.5 shadow">
+              <i class="fa-solid fa-copy"></i> Copy for Email / Outlook
+            </button>
+            <button onclick="copyPlainText()" class="flex-1 sm:flex-none bg-[#1f2630] hover:bg-allconRed text-white text-xs font-bold px-3 py-2 rounded-lg border border-cardBorder transition flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-file-lines"></i> Plain Text
+            </button>
+          </div>
+        </div>
+
+        <div id="outputTableWrapper" class="overflow-x-auto">
+          <div class="text-center py-12 text-zinc-500 text-xs">
+            Enter or paste items on the left and click <strong>Consolidate</strong> to view your aggregated list.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-cardBg border-t border-cardBorder py-4 text-center text-xs text-zinc-500">
+    ALLCON Fabrication & Engineering &copy; 2026 | Technical Buyer Tools
+  </footer>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 bg-emerald-600 text-white font-bold text-xs px-4 py-3 rounded-lg shadow-2xl flex items-center gap-2 transition-all opacity-0 pointer-events-none transform translate-y-2 z-50">
+    <i class="fa-solid fa-check-circle"></i> <span id="toastMsg">Copied to Clipboard!</span>
+  </div>
+
+  <script>
+    // Initial sample rows matching prompt
+    let rawItems = [
+      { size: 'M20', pitch: 'P1.75', length: '100Lg', grade: 'Gr8.8', qty: 50 },
+      { size: 'M20', pitch: 'P1.75', length: '100Lg', grade: 'Gr8.8', qty: 5 }
+    ];
+
+    let consolidatedResults = [];
+
+    function renderInputRows() {
+      const container = document.getElementById('inputRowsContainer');
+      container.innerHTML = rawItems.map((item, idx) => `
+        <div class="grid grid-cols-12 gap-1.5 items-center bg-[#181d24] p-2 rounded-lg border border-cardBorder">
+          <div class="col-span-3">
+            <input type="text" value="${item.size}" placeholder="e.g. M20" onchange="updateItem(${idx}, 'size', this.value)" class="w-full p-1.5 rounded text-xs font-bold uppercase">
+          </div>
+          <div class="col-span-2">
+            <input type="text" value="${item.pitch}" placeholder="P1.75" onchange="updateItem(${idx}, 'pitch', this.value)" class="w-full p-1.5 rounded text-xs">
+          </div>
+          <div class="col-span-2">
+            <input type="text" value="${item.length}" placeholder="100Lg" onchange="updateItem(${idx}, 'length', this.value)" class="w-full p-1.5 rounded text-xs">
+          </div>
+          <div class="col-span-2">
+            <input type="text" value="${item.grade}" placeholder="Gr8.8" onchange="updateItem(${idx}, 'grade', this.value)" class="w-full p-1.5 rounded text-xs">
+          </div>
+          <div class="col-span-2">
+            <input type="number" value="${item.qty}" min="1" placeholder="Qty" onchange="updateItem(${idx}, 'qty', this.value)" class="w-full p-1.5 rounded text-xs font-bold text-center">
+          </div>
+          <div class="col-span-1 text-right">
+            <button onclick="removeRow(${idx})" class="text-zinc-500 hover:text-red-400 font-bold p-1">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function addBlankRow() {
+      rawItems.push({ size: 'M16', pitch: 'P2.0', length: '50Lg', grade: 'Gr8.8', qty: 1 });
+      renderInputRows();
+    }
+
+    function removeRow(idx) {
+      rawItems.splice(idx, 1);
+      renderInputRows();
+      consolidateItems();
+    }
+
+    function updateItem(idx, field, value) {
+      if (field === 'qty') {
+        rawItems[idx][field] = Math.max(1, parseInt(value) || 1);
+      } else {
+        rawItems[idx][field] = value.trim();
+      }
+    }
+
+    function parseRawText() {
+      const text = document.getElementById('rawPasteInput').value.trim();
+      if (!text) return;
+
+      const lines = text.split(/\r?\n/);
+      let parsedNewItems = [];
+
+      lines.forEach(line => {
+        if (!line.trim()) return;
+
+        // Regex patterns to detect size, pitch, length, grade, quantity
+        const sizeMatch = line.match(/\b(M\d+|M\d+\.\d+|\d+mm|1\/2"|3\/4"|5\/8"|7\/8"|1")\b/i);
+        const pitchMatch = line.match(/\b(P\d+\.\d+|P\d+|\d+\.\d+pitch)\b/i);
+        const lengthMatch = line.match(/\b(\d+Lg|\d+mmLg|\d+\s*Lg|\d+\s*mm)\b/i);
+        const gradeMatch = line.match(/\b(Gr\d+\.\d+|Gr\d+|8\.8|10\.9|12\.9|304SS|316SS|HDG|Zinc)\b/i);
+        const qtyMatch = line.match(/(\d+)\s*(OFF|PCS|QTY|EA|\times)?/i) || line.match(/[-:\s]\s*(\d+)$/);
+
+        const size = sizeMatch ? sizeMatch[0].toUpperCase() : 'FASTENER';
+        const pitch = pitchMatch ? pitchMatch[0].toUpperCase() : '';
+        const length = lengthMatch ? lengthMatch[0] : '';
+        const grade = gradeMatch ? gradeMatch[0].toUpperCase() : '';
+        
+        let qty = 1;
+        if (qtyMatch && parseInt(qtyMatch[1])) {
+          qty = parseInt(qtyMatch[1]);
+        }
+
+        parsedNewItems.push({ size, pitch, length, grade, qty });
+      });
+
+      if (parsedNewItems.length > 0) {
+        rawItems = parsedNewItems;
+        renderInputRows();
+        consolidateItems();
+        showToast(`Parsed ${parsedNewItems.length} lines from text!`);
+      }
+    }
+
+    function consolidateItems() {
+      let map = new Map();
+
+      rawItems.forEach(item => {
+        const size = (item.size || '').toUpperCase().trim();
+        const pitch = (item.pitch || '').toUpperCase().trim();
+        const length = (item.length || '').toUpperCase().trim();
+        const grade = (item.grade || '').toUpperCase().trim();
+        const qty = parseInt(item.qty) || 0;
+
+        if (!size && qty <= 0) return;
+
+        // Create unique composite key based on properties
+        const key = `${size}|${pitch}|${length}|${grade}`;
+
+        if (map.has(key)) {
+          let existing = map.get(key);
+          existing.qty += qty;
+        } else {
+          map.set(key, { size, pitch, length, grade, qty });
+        }
+      });
+
+      consolidatedResults = Array.from(map.values());
+      renderOutputTable();
+    }
+
+    function renderOutputTable() {
+      const wrapper = document.getElementById('outputTableWrapper');
+
+      const totalRawQty = rawItems.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0);
+      const totalConsolidatedQty = consolidatedResults.reduce((sum, item) => sum + item.qty, 0);
+
+      document.getElementById('resRawCount').innerText = rawItems.length;
+      document.getElementById('resUniqueCount').innerText = consolidatedResults.length;
+      document.getElementById('resTotalQty').innerText = totalConsolidatedQty;
+
+      if (consolidatedResults.length === 0) {
+        wrapper.innerHTML = `
+          <div class="text-center py-12 text-zinc-500 text-xs">
+            No items to consolidate. Add or paste items on the left.
+          </div>
+        `;
+        return;
+      }
+
+      let rowsHtml = consolidatedResults.map(item => {
+        // Build clean combined description string
+        const descParts = [item.size, item.pitch, item.length, item.grade].filter(Boolean);
+        const fullDesc = descParts.join(' x ');
+
+        return `
+          <tr>
+            <td style="font-weight: bold; color: #ffffff;">${item.size || '--'}</td>
+            <td>${item.pitch || '--'}</td>
+            <td>${item.length || '--'}</td>
+            <td>${item.grade || '--'}</td>
+            <td style="font-weight: bold; color: #4fc3f7;">${fullDesc}</td>
+            <td style="font-weight: bold; text-align: center; color: #81c784; background-color: rgba(56, 142, 60, 0.15);">${item.qty} OFF</td>
+          </tr>
+        `;
+      }).join('');
+
+      wrapper.innerHTML = `
+        <table class="formatted-email-table" id="consolidatedEmailTable">
+          <thead>
+            <tr>
+              <th>SIZE / DIA</th>
+              <th>PITCH</th>
+              <th>LENGTH</th>
+              <th>GRADE</th>
+              <th>FULL DESCRIPTION</th>
+              <th style="text-align: center;">TOTAL QTY</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function copyTableForEmail() {
+      if (consolidatedResults.length === 0) return;
+
+      const tableEl = document.getElementById('consolidatedEmailTable');
+      if (!tableEl) return;
+
+      // Build rich inline-styled HTML for Outlook/Email compatibility
+      let htmlContent = `
+        <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px; width: 100%; border: 1px solid #cccccc;">
+          <thead>
+            <tr style="background-color: #e53935; color: #ffffff; text-align: left;">
+              <th style="padding: 8px; border: 1px solid #cccccc;">SIZE / DIA</th>
+              <th style="padding: 8px; border: 1px solid #cccccc;">PITCH</th>
+              <th style="padding: 8px; border: 1px solid #cccccc;">LENGTH</th>
+              <th style="padding: 8px; border: 1px solid #cccccc;">GRADE</th>
+              <th style="padding: 8px; border: 1px solid #cccccc;">FULL DESCRIPTION</th>
+              <th style="padding: 8px; border: 1px solid #cccccc; text-align: center;">TOTAL QTY</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      consolidatedResults.forEach((item, idx) => {
+        const bg = idx % 2 === 0 ? '#f9f9f9' : '#ffffff';
+        const descParts = [item.size, item.pitch, item.length, item.grade].filter(Boolean);
+        const fullDesc = descParts.join(' x ');
+
+        htmlContent += `
+          <tr style="background-color: ${bg};">
+            <td style="padding: 8px; border: 1px solid #cccccc; font-weight: bold;">${item.size || ''}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc;">${item.pitch || ''}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc;">${item.length || ''}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc;">${item.grade || ''}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc; font-weight: bold;">${fullDesc}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc; text-align: center; font-weight: bold; color: #2e7d32;">${item.qty} OFF</td>
+          </tr>
+        `;
+      });
+
+      htmlContent += `
+          </tbody>
+        </table>
+      `;
+
+      // Copy HTML format to clipboard
+      const blobHtml = new Blob([htmlContent], { type: 'text/html' });
+      const blobText = new Blob([getPlainTextString()], { type: 'text/plain' });
+      const clipboardItem = new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText });
+
+      navigator.clipboard.write([clipboardItem]).then(() => {
+        showToast('Formatted table copied! Paste directly into email.');
+      }).catch(err => {
+        // Fallback to text copy if Blob API fails
+        copyPlainText();
+      });
+    }
+
+    function getPlainTextString() {
+      let text = "SIZE\tPITCH\tLENGTH\tGRADE\tFULL DESCRIPTION\tTOTAL QTY\n";
+      consolidatedResults.forEach(item => {
+        const descParts = [item.size, item.pitch, item.length, item.grade].filter(Boolean);
+        text += `${item.size}\t${item.pitch}\t${item.length}\t${item.grade}\t${descParts.join(' x ')}\t${item.qty} OFF\n`;
+      });
+      return text;
+    }
+
+    function copyPlainText() {
+      if (consolidatedResults.length === 0) return;
+      const str = getPlainTextString();
+      navigator.clipboard.writeText(str).then(() => {
+        showToast('Plain text copied to clipboard!');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+      }, 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderInputRows();
+      consolidateItems();
+    });
+  </script>
+</body>
+</html>
