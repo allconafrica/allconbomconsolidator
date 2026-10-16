@@ -102,52 +102,68 @@
   <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-6 py-8 flex-grow w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-    <!-- LEFT COLUMN: INPUT SECTION -->
+    <!-- LEFT COLUMN: INPUT SECTION WITH TOGGLE SWITCH -->
     <div class="lg:col-span-5 space-y-6">
 
-      <!-- QUICK RAW TEXT / BOM PASTE -->
       <div class="bg-cardBg border border-cardBorder rounded-xl p-5 shadow-xl">
-        <h2 class="text-sm font-black text-allconRed uppercase tracking-wider mb-2 flex items-center gap-2">
-          <i class="fa-solid fa-paste"></i> 1. Paste Raw Text / BOM
-        </h2>
-        <p class="text-[11px] text-zinc-400 mb-3">Paste raw drawing lines or Excel text to auto-parse items into the list below.</p>
-
-        <textarea id="rawPasteInput" rows="4" placeholder="Example:&#10;M20xP1.75x 100Lg Gr8.8 - 50 OFF&#10;M20xP1.75x 100Lg Gr8.8 - 5 OFF&#10;M16xP2.0x 80Lg Gr8.8 - 20 OFF" class="w-full p-3 rounded-lg border text-xs font-mono"></textarea>
-
-        <button onclick="parseRawText()" class="w-full mt-3 bg-[#1f2630] hover:bg-allconRed text-white font-bold py-2.5 rounded-lg text-xs border border-cardBorder transition uppercase tracking-wider flex items-center justify-center gap-2">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Parse & Merge Into Table
-        </button>
-      </div>
-
-      <!-- ITEM ENTRY FORM -->
-      <div class="bg-cardBg border border-cardBorder rounded-xl p-5 shadow-xl">
-        <div class="flex justify-between items-center mb-3">
-          <h2 class="text-sm font-black text-allconRed uppercase tracking-wider flex items-center gap-2">
-            <i class="fa-solid fa-list"></i> 2. Unconsolidated Line Items
-          </h2>
-          <button onclick="addBlankRow()" class="bg-allconRed hover:bg-allconRedHover text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
-            <i class="fa-solid fa-plus text-[10px]"></i> Add Item
+        
+        <!-- INPUT MODE TOGGLE SWITCH -->
+        <div class="flex items-center justify-between bg-[#090a0c] p-1.5 rounded-lg border border-cardBorder mb-5">
+          <button id="btnModeForm" onclick="setMode('form')" class="flex-1 py-2 rounded-md text-xs font-black uppercase transition bg-allconRed text-white shadow">
+            <i class="fa-solid fa-list mr-1.5"></i> Manual Form
+          </button>
+          <button id="btnModePaste" onclick="setMode('paste')" class="flex-1 py-2 rounded-md text-xs font-bold uppercase transition text-zinc-400 hover:text-white">
+            <i class="fa-solid fa-paste mr-1.5"></i> Paste Raw Text
           </button>
         </div>
 
-        <!-- HEADERS -->
-        <div class="grid grid-cols-12 gap-1.5 text-[10px] font-black text-zinc-400 uppercase tracking-wider px-1 mb-2">
-          <div class="col-span-3">Size/Dia</div>
-          <div class="col-span-2">Pitch</div>
-          <div class="col-span-2">Length</div>
-          <div class="col-span-2">Grade</div>
-          <div class="col-span-2 text-center">Qty</div>
-          <div class="col-span-1"></div>
+        <!-- VIEW A: MANUAL ENTRY FORM -->
+        <div id="viewForm" class="space-y-4">
+          <div class="flex justify-between items-center mb-1">
+            <h2 class="text-xs font-black text-allconRed uppercase tracking-wider flex items-center gap-2">
+              <i class="fa-solid fa-pen-to-square"></i> Line Items
+            </h2>
+            <button onclick="addBlankRow()" class="bg-allconRed hover:bg-allconRedHover text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-plus text-[10px]"></i> Add Item
+            </button>
+          </div>
+
+          <!-- HEADERS -->
+          <div class="grid grid-cols-12 gap-1.5 text-[10px] font-black text-zinc-400 uppercase tracking-wider px-1">
+            <div class="col-span-3">Size/Dia</div>
+            <div class="col-span-2">Pitch</div>
+            <div class="col-span-2">Length</div>
+            <div class="col-span-2">Grade</div>
+            <div class="col-span-2 text-center">Qty</div>
+            <div class="col-span-1"></div>
+          </div>
+
+          <!-- INPUT ROWS -->
+          <div class="space-y-2 max-h-[360px] overflow-y-auto pr-1" id="inputRowsContainer">
+            <!-- Dynamic Input Rows inserted here -->
+          </div>
+
+          <button onclick="consolidateItems()" class="w-full mt-4 bg-allconRed hover:bg-allconRedHover text-white font-black py-3 rounded-lg text-sm shadow-lg transition uppercase tracking-wider flex items-center justify-center gap-2">
+            <i class="fa-solid fa-layer-group"></i> Consolidate & Generate Table
+          </button>
         </div>
 
-        <!-- INPUT ROWS -->
-        <div class="space-y-2 max-h-[350px] overflow-y-auto pr-1" id="inputRowsContainer">
-          <!-- Dynamic Input Rows inserted here -->
+        <!-- VIEW B: RAW TEXT / BOM PASTE -->
+        <div id="viewPaste" class="hidden space-y-4">
+          <div>
+            <h2 class="text-xs font-black text-allconRed uppercase tracking-wider mb-1 flex items-center gap-2">
+              <i class="fa-solid fa-paste"></i> Paste Raw Drawing Text
+            </h2>
+            <p class="text-[11px] text-zinc-400 mb-3">Paste drawing lines or Excel text to auto-parse into the consolidator.</p>
+          </div>
+
+          <textarea id="rawPasteInput" rows="8" placeholder="Example:&#10;M20 x 1.75 x 100 x 8.8 - 50 OFF&#10;M20 x 1.75 x 100 x 8.8 - 5 OFF&#10;M16 x 2.0 x 80 x 8.8 - 20 OFF" class="w-full p-3 rounded-lg border text-xs font-mono"></textarea>
+
+          <button onclick="parseRawText()" class="w-full bg-allconRed hover:bg-allconRedHover text-white font-black py-3 rounded-lg text-sm shadow-lg transition uppercase tracking-wider flex items-center justify-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Parse & Consolidate
+          </button>
         </div>
 
-        <button onclick="consolidateItems()" class="w-full mt-4 bg-allconRed hover:bg-allconRedHover text-white font-black py-3 rounded-lg text-sm shadow-lg transition uppercase tracking-wider flex items-center justify-center gap-2">
-          <i class="fa-solid fa-layer-group"></i> Consolidate & Generate Table
-        </button>
       </div>
 
     </div>
@@ -218,35 +234,53 @@
   </div>
 
   <script>
-    // Initial sample rows matching prompt
+    // Single numeric sample line
     let rawItems = [
-      { size: 'M20', pitch: 'P1.75', length: '100Lg', grade: 'Gr8.8', qty: 50 },
-      { size: 'M20', pitch: 'P1.75', length: '100Lg', grade: 'Gr8.8', qty: 5 }
+      { size: '20', pitch: '1.75', length: '100', grade: '8.8', qty: 50 }
     ];
 
     let consolidatedResults = [];
+
+    function setMode(mode) {
+      const btnForm = document.getElementById('btnModeForm');
+      const btnPaste = document.getElementById('btnModePaste');
+      const viewForm = document.getElementById('viewForm');
+      const viewPaste = document.getElementById('viewPaste');
+
+      if (mode === 'form') {
+        btnForm.className = 'flex-1 py-2 rounded-md text-xs font-black uppercase transition bg-allconRed text-white shadow';
+        btnPaste.className = 'flex-1 py-2 rounded-md text-xs font-bold uppercase transition text-zinc-400 hover:text-white';
+        viewForm.classList.remove('hidden');
+        viewPaste.classList.add('hidden');
+      } else {
+        btnPaste.className = 'flex-1 py-2 rounded-md text-xs font-black uppercase transition bg-allconRed text-white shadow';
+        btnForm.className = 'flex-1 py-2 rounded-md text-xs font-bold uppercase transition text-zinc-400 hover:text-white';
+        viewPaste.classList.remove('hidden');
+        viewForm.classList.add('hidden');
+      }
+    }
 
     function renderInputRows() {
       const container = document.getElementById('inputRowsContainer');
       container.innerHTML = rawItems.map((item, idx) => `
         <div class="grid grid-cols-12 gap-1.5 items-center bg-[#181d24] p-2 rounded-lg border border-cardBorder">
           <div class="col-span-3">
-            <input type="text" value="${item.size}" placeholder="e.g. M20" onchange="updateItem(${idx}, 'size', this.value)" class="w-full p-1.5 rounded text-xs font-bold uppercase">
+            <input type="text" value="${item.size}" placeholder="20" onchange="updateItem(${idx}, 'size', this.value)" class="w-full p-1.5 rounded text-xs font-bold uppercase text-center">
           </div>
           <div class="col-span-2">
-            <input type="text" value="${item.pitch}" placeholder="P1.75" onchange="updateItem(${idx}, 'pitch', this.value)" class="w-full p-1.5 rounded text-xs">
+            <input type="text" value="${item.pitch}" placeholder="1.75" onchange="updateItem(${idx}, 'pitch', this.value)" class="w-full p-1.5 rounded text-xs text-center">
           </div>
           <div class="col-span-2">
-            <input type="text" value="${item.length}" placeholder="100Lg" onchange="updateItem(${idx}, 'length', this.value)" class="w-full p-1.5 rounded text-xs">
+            <input type="text" value="${item.length}" placeholder="100" onchange="updateItem(${idx}, 'length', this.value)" class="w-full p-1.5 rounded text-xs text-center">
           </div>
           <div class="col-span-2">
-            <input type="text" value="${item.grade}" placeholder="Gr8.8" onchange="updateItem(${idx}, 'grade', this.value)" class="w-full p-1.5 rounded text-xs">
+            <input type="text" value="${item.grade}" placeholder="8.8" onchange="updateItem(${idx}, 'grade', this.value)" class="w-full p-1.5 rounded text-xs text-center">
           </div>
           <div class="col-span-2">
-            <input type="number" value="${item.qty}" min="1" placeholder="Qty" onchange="updateItem(${idx}, 'qty', this.value)" class="w-full p-1.5 rounded text-xs font-bold text-center">
+            <input type="number" value="${item.qty}" min="1" placeholder="50" onchange="updateItem(${idx}, 'qty', this.value)" class="w-full p-1.5 rounded text-xs font-bold text-center">
           </div>
           <div class="col-span-1 text-right">
-            <button onclick="removeRow(${idx})" class="text-zinc-500 hover:text-red-400 font-bold p-1">
+            <button onclick="removeRow(${idx})" class="text-zinc-500 hover:text-red-400 font-bold p-1" title="Remove line">
               <i class="fa-solid fa-trash-can text-xs"></i>
             </button>
           </div>
@@ -255,7 +289,7 @@
     }
 
     function addBlankRow() {
-      rawItems.push({ size: 'M16', pitch: 'P2.0', length: '50Lg', grade: 'Gr8.8', qty: 1 });
+      rawItems.push({ size: '16', pitch: '2.0', length: '50', grade: '8.8', qty: 1 });
       renderInputRows();
     }
 
@@ -269,7 +303,8 @@
       if (field === 'qty') {
         rawItems[idx][field] = Math.max(1, parseInt(value) || 1);
       } else {
-        rawItems[idx][field] = value.trim();
+        // Strip out prefixed letters if user types them in numeric mode
+        rawItems[idx][field] = value.replace(/[^\d.]/g, '').trim();
       }
     }
 
@@ -283,47 +318,48 @@
       lines.forEach(line => {
         if (!line.trim()) return;
 
-        // Regex patterns to detect size, pitch, length, grade, quantity
-        const sizeMatch = line.match(/\b(M\d+|M\d+\.\d+|\d+mm|1\/2"|3\/4"|5\/8"|7\/8"|1")\b/i);
-        const pitchMatch = line.match(/\b(P\d+\.\d+|P\d+|\d+\.\d+pitch)\b/i);
-        const lengthMatch = line.match(/\b(\d+Lg|\d+mmLg|\d+\s*Lg|\d+\s*mm)\b/i);
-        const gradeMatch = line.match(/\b(Gr\d+\.\d+|Gr\d+|8\.8|10\.9|12\.9|304SS|316SS|HDG|Zinc)\b/i);
-        const qtyMatch = line.match(/(\d+)\s*(OFF|PCS|QTY|EA|\times)?/i) || line.match(/[-:\s]\s*(\d+)$/);
+        const nums = line.match(/\d+(\.\d+)?/g);
+        if (nums && nums.length >= 1) {
+          const size = nums[0] || '';
+          const pitch = nums[1] || '';
+          const length = nums[2] || '';
+          const grade = nums[3] || '';
+          const qty = nums[4] ? parseInt(nums[4]) : 1;
 
-        const size = sizeMatch ? sizeMatch[0].toUpperCase() : 'FASTENER';
-        const pitch = pitchMatch ? pitchMatch[0].toUpperCase() : '';
-        const length = lengthMatch ? lengthMatch[0] : '';
-        const grade = gradeMatch ? gradeMatch[0].toUpperCase() : '';
-        
-        let qty = 1;
-        if (qtyMatch && parseInt(qtyMatch[1])) {
-          qty = parseInt(qtyMatch[1]);
+          parsedNewItems.push({ size, pitch, length, grade, qty });
         }
-
-        parsedNewItems.push({ size, pitch, length, grade, qty });
       });
 
       if (parsedNewItems.length > 0) {
         rawItems = parsedNewItems;
         renderInputRows();
         consolidateItems();
+        setMode('form');
         showToast(`Parsed ${parsedNewItems.length} lines from text!`);
       }
+    }
+
+    function buildFormattedDesc(item) {
+      let parts = [];
+      if (item.size) parts.push(`M${item.size}`);
+      if (item.pitch) parts.push(`P${item.pitch}`);
+      if (item.length) parts.push(`${item.length}Lg`);
+      if (item.grade) parts.push(`Gr${item.grade}`);
+      return parts.join(' x ');
     }
 
     function consolidateItems() {
       let map = new Map();
 
       rawItems.forEach(item => {
-        const size = (item.size || '').toUpperCase().trim();
-        const pitch = (item.pitch || '').toUpperCase().trim();
-        const length = (item.length || '').toUpperCase().trim();
-        const grade = (item.grade || '').toUpperCase().trim();
+        const size = (item.size || '').trim();
+        const pitch = (item.pitch || '').trim();
+        const length = (item.length || '').trim();
+        const grade = (item.grade || '').trim();
         const qty = parseInt(item.qty) || 0;
 
         if (!size && qty <= 0) return;
 
-        // Create unique composite key based on properties
         const key = `${size}|${pitch}|${length}|${grade}`;
 
         if (map.has(key)) {
@@ -341,7 +377,6 @@
     function renderOutputTable() {
       const wrapper = document.getElementById('outputTableWrapper');
 
-      const totalRawQty = rawItems.reduce((sum, item) => sum + (parseInt(item.qty) || 0), 0);
       const totalConsolidatedQty = consolidatedResults.reduce((sum, item) => sum + item.qty, 0);
 
       document.getElementById('resRawCount').innerText = rawItems.length;
@@ -358,16 +393,14 @@
       }
 
       let rowsHtml = consolidatedResults.map(item => {
-        // Build clean combined description string
-        const descParts = [item.size, item.pitch, item.length, item.grade].filter(Boolean);
-        const fullDesc = descParts.join(' x ');
+        const fullDesc = buildFormattedDesc(item);
 
         return `
           <tr>
-            <td style="font-weight: bold; color: #ffffff;">${item.size || '--'}</td>
-            <td>${item.pitch || '--'}</td>
-            <td>${item.length || '--'}</td>
-            <td>${item.grade || '--'}</td>
+            <td style="font-weight: bold; color: #ffffff;">${item.size ? 'M' + item.size : '--'}</td>
+            <td>${item.pitch ? 'P' + item.pitch : '--'}</td>
+            <td>${item.length ? item.length + 'Lg' : '--'}</td>
+            <td>${item.grade ? 'Gr' + item.grade : '--'}</td>
             <td style="font-weight: bold; color: #4fc3f7;">${fullDesc}</td>
             <td style="font-weight: bold; text-align: center; color: #81c784; background-color: rgba(56, 142, 60, 0.15);">${item.qty} OFF</td>
           </tr>
@@ -399,7 +432,6 @@
       const tableEl = document.getElementById('consolidatedEmailTable');
       if (!tableEl) return;
 
-      // Build rich inline-styled HTML for Outlook/Email compatibility
       let htmlContent = `
         <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px; width: 100%; border: 1px solid #cccccc;">
           <thead>
@@ -417,15 +449,14 @@
 
       consolidatedResults.forEach((item, idx) => {
         const bg = idx % 2 === 0 ? '#f9f9f9' : '#ffffff';
-        const descParts = [item.size, item.pitch, item.length, item.grade].filter(Boolean);
-        const fullDesc = descParts.join(' x ');
+        const fullDesc = buildFormattedDesc(item);
 
         htmlContent += `
           <tr style="background-color: ${bg};">
-            <td style="padding: 8px; border: 1px solid #cccccc; font-weight: bold;">${item.size || ''}</td>
-            <td style="padding: 8px; border: 1px solid #cccccc;">${item.pitch || ''}</td>
-            <td style="padding: 8px; border: 1px solid #cccccc;">${item.length || ''}</td>
-            <td style="padding: 8px; border: 1px solid #cccccc;">${item.grade || ''}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc; font-weight: bold;">${item.size ? 'M' + item.size : ''}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc;">${item.pitch ? 'P' + item.pitch : ''}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc;">${item.length ? item.length + 'Lg' : ''}</td>
+            <td style="padding: 8px; border: 1px solid #cccccc;">${item.grade ? 'Gr' + item.grade : ''}</td>
             <td style="padding: 8px; border: 1px solid #cccccc; font-weight: bold;">${fullDesc}</td>
             <td style="padding: 8px; border: 1px solid #cccccc; text-align: center; font-weight: bold; color: #2e7d32;">${item.qty} OFF</td>
           </tr>
@@ -437,7 +468,6 @@
         </table>
       `;
 
-      // Copy HTML format to clipboard
       const blobHtml = new Blob([htmlContent], { type: 'text/html' });
       const blobText = new Blob([getPlainTextString()], { type: 'text/plain' });
       const clipboardItem = new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText });
@@ -445,7 +475,6 @@
       navigator.clipboard.write([clipboardItem]).then(() => {
         showToast('Formatted table copied! Paste directly into email.');
       }).catch(err => {
-        // Fallback to text copy if Blob API fails
         copyPlainText();
       });
     }
@@ -453,8 +482,8 @@
     function getPlainTextString() {
       let text = "SIZE\tPITCH\tLENGTH\tGRADE\tFULL DESCRIPTION\tTOTAL QTY\n";
       consolidatedResults.forEach(item => {
-        const descParts = [item.size, item.pitch, item.length, item.grade].filter(Boolean);
-        text += `${item.size}\t${item.pitch}\t${item.length}\t${item.grade}\t${descParts.join(' x ')}\t${item.qty} OFF\n`;
+        const fullDesc = buildFormattedDesc(item);
+        text += `${item.size ? 'M' + item.size : ''}\t${item.pitch ? 'P' + item.pitch : ''}\t${item.length ? item.length + 'Lg' : ''}\t${item.grade ? 'Gr' + item.grade : ''}\t${fullDesc}\t${item.qty} OFF\n`;
       });
       return text;
     }
