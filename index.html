@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALLCON - Fastener & BOM Line Consolidator</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e53935'><path d='M7 2h10l2 4v2H5V6l2-4zm-2 8h14v2H5v-2zm2 4h10v8H7v-8z'/></svg>">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -68,8 +70,8 @@
         <!-- HEADER -->
         <header class="flex flex-col md:flex-row items-start md:items-center justify-between pb-4 border-b border-brand-border gap-4">
             <div class="flex items-center gap-4">
-                <div class="bg-black p-2.5 rounded-lg border border-brand-border flex items-center justify-center">
-                    <span class="text-brand-red font-black text-xl tracking-wider">ALLCON</span>
+                <div class="flex items-center justify-center">
+                    <img src="./ALLCON-Logo.jpg" alt="ALLCON Logo" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.outerHTML=`<div class='bg-brand-red text-white font-black px-3 py-1 rounded text-xl tracking-wider'>ALLCON</div>`;">
                 </div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -127,7 +129,9 @@
                             </h2>
                             <span class="text-xs text-brand-muted">Paste line items from BOM / Excel</span>
                         </div>
-                        <textarea id="raw-text-input" rows="12" class="w-full bg-brand-inputBg border border-brand-border rounded-lg p-3 text-xs md:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-brand-red font-mono leading-relaxed" placeholder="Paste your BOM lines here, e.g.:&#10;50 off M20x2.5x90 Gr8.8 Bolt&#10;40 off M20 Nut Gr8&#10;100 off M20 Washer Hardened&#10;2.0 x M16 x 50Lg 8.8 Bolt (Qty 10)"></textarea>
+                        <textarea id="raw-text-input" rows="12" class="w-full bg-brand-inputBg border border-brand-border rounded-lg p-3 text-xs md:text-sm text-zinc-100 focus:outline-none focus:border-brand-red font-mono leading-relaxed">50 off M20x1.75x100 Gr8.8 Bolt
+40 off M20 Nut Gr8
+100 off M20 Washer Hardened</textarea>
                         <div class="bg-zinc-900/60 border border-zinc-800 p-2.5 rounded-lg text-[11px] text-zinc-400">
                             <span class="text-brand-red font-semibold">Tip:</span> The parser automatically detects quantities, thread pitch, grades, lengths, and item types (Bolt, Nut, Washer).
                         </div>
@@ -149,19 +153,19 @@
                 <div class="grid grid-cols-3 gap-3 md:gap-4">
                     <div class="bg-brand-card p-3.5 md:p-4 rounded-xl border border-brand-border shadow-md">
                         <p class="text-[10px] md:text-xs font-bold text-brand-muted uppercase tracking-wider">RAW INPUT LINES</p>
-                        <h3 id="stat-input-count" class="text-2xl md:text-3xl font-extrabold text-white mt-1">3</h3>
+                        <h3 id="stat-input-count" class="text-2xl md:text-3xl font-extrabold text-white mt-1">1</h3>
                         <p class="text-[10px] text-zinc-500 mt-0.5">Total entries parsed</p>
                     </div>
 
                     <div class="bg-brand-card p-3.5 md:p-4 rounded-xl border border-brand-border shadow-md">
                         <p class="text-[10px] md:text-xs font-bold text-brand-muted uppercase tracking-wider">CONSOLIDATED LINES</p>
-                        <h3 id="stat-unique-count" class="text-2xl md:text-3xl font-extrabold text-brand-green mt-1">3</h3>
+                        <h3 id="stat-unique-count" class="text-2xl md:text-3xl font-extrabold text-brand-green mt-1">1</h3>
                         <p class="text-[10px] text-zinc-500 mt-0.5">Unique items grouped</p>
                     </div>
 
                     <div class="bg-brand-card p-3.5 md:p-4 rounded-xl border border-brand-border shadow-md">
                         <p class="text-[10px] md:text-xs font-bold text-brand-muted uppercase tracking-wider">TOTAL FASTENER QTY</p>
-                        <h3 id="stat-total-qty" class="text-2xl md:text-3xl font-extrabold text-white mt-1">190</h3>
+                        <h3 id="stat-total-qty" class="text-2xl md:text-3xl font-extrabold text-white mt-1">50</h3>
                         <p class="text-[10px] text-zinc-500 mt-0.5">Combined off count</p>
                     </div>
                 </div>
@@ -227,11 +231,9 @@
     <script>
         let currentTab = 'manual';
 
-        // Initial Sample Data (Pre-loaded with Bolts, Nuts, Washers)
+        // Initial Sample Data (Single populated default item without placeholders)
         const initialItems = [
-            { type: 'Bolt', dia: '20', pitch: '2.5', length: '90', grade: '8.8', qty: 50 },
-            { type: 'Nut', dia: '20', pitch: '2.5', length: '', grade: 'Gr8', qty: 40 },
-            { type: 'Washer', dia: '20', pitch: '', length: '', grade: 'Hardened', qty: 100 }
+            { type: 'Bolt', dia: '20', pitch: '1.75', length: '100', grade: '8.8', qty: 50 }
         ];
 
         window.onload = function() {
@@ -265,7 +267,7 @@
             items.forEach(item => addRow(item));
         }
 
-        function addRow(data = { type: 'Bolt', dia: '', pitch: '', length: '', grade: '', qty: 1 }) {
+        function addRow(data = { type: 'Bolt', dia: '20', pitch: '1.75', length: '100', grade: '8.8', qty: 1 }) {
             const container = document.getElementById('items-container');
             const rowId = 'row-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
             
@@ -288,13 +290,13 @@
                     <!-- Size / Dia -->
                     <div class="col-span-3">
                         <label class="block text-[10px] font-bold text-zinc-400 mb-0.5">SIZE/DIA</label>
-                        <input type="text" placeholder="e.g. 20" value="${data.dia}" class="item-dia w-full bg-brand-inputBg border border-brand-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-brand-red font-mono">
+                        <input type="text" value="${data.dia}" class="item-dia w-full bg-brand-inputBg border border-brand-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-brand-red font-mono">
                     </div>
 
                     <!-- Pitch -->
                     <div class="col-span-3">
                         <label class="block text-[10px] font-bold text-zinc-400 mb-0.5">PITCH</label>
-                        <input type="text" placeholder="e.g. 2.5" value="${data.pitch}" class="item-pitch w-full bg-brand-inputBg border border-brand-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-brand-red font-mono">
+                        <input type="text" value="${data.pitch}" class="item-pitch w-full bg-brand-inputBg border border-brand-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-brand-red font-mono">
                     </div>
 
                     <!-- Qty -->
@@ -315,13 +317,13 @@
                     <!-- Length -->
                     <div class="col-span-6">
                         <label class="block text-[10px] font-bold text-zinc-400 mb-0.5">LENGTH (mm)</label>
-                        <input type="text" placeholder="e.g. 90" value="${data.length}" class="item-length w-full bg-brand-inputBg border border-brand-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-brand-red font-mono">
+                        <input type="text" value="${data.length}" class="item-length w-full bg-brand-inputBg border border-brand-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-brand-red font-mono">
                     </div>
 
                     <!-- Grade / Material -->
                     <div class="col-span-6">
                         <label class="block text-[10px] font-bold text-zinc-400 mb-0.5">GRADE / MATERIAL</label>
-                        <input type="text" placeholder="e.g. 8.8 / Hardened / SS" value="${data.grade}" class="item-grade w-full bg-brand-inputBg border border-brand-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-brand-red font-mono">
+                        <input type="text" value="${data.grade}" class="item-grade w-full bg-brand-inputBg border border-brand-border rounded px-2 py-1.5 text-white focus:outline-none focus:border-brand-red font-mono">
                     </div>
                 </div>
             `;
@@ -341,29 +343,23 @@
             if (type === 'Bolt') {
                 pitchInput.disabled = false;
                 pitchInput.classList.remove('disabled-input');
-                pitchInput.placeholder = "e.g. 2.5";
 
                 lengthInput.disabled = false;
                 lengthInput.classList.remove('disabled-input');
-                lengthInput.placeholder = "e.g. 90";
             } else if (type === 'Nut') {
                 pitchInput.disabled = false;
                 pitchInput.classList.remove('disabled-input');
-                pitchInput.placeholder = "e.g. 2.5";
 
                 lengthInput.disabled = true;
                 lengthInput.value = '';
-                lengthInput.placeholder = "N/A";
                 lengthInput.classList.add('disabled-input');
             } else if (type === 'Washer') {
                 pitchInput.disabled = true;
                 pitchInput.value = '';
-                pitchInput.placeholder = "N/A";
                 pitchInput.classList.add('disabled-input');
 
                 lengthInput.disabled = true;
                 lengthInput.value = '';
-                lengthInput.placeholder = "N/A";
                 lengthInput.classList.add('disabled-input');
             }
         }
@@ -402,35 +398,29 @@
                 if (!line) return;
 
                 let qty = 1;
-                // Match QTY like "50 off", "Qty 50", "50x"
                 const qtyMatch = line.match(/(\d+)\s*(off|pcs|pieces)?/i) || line.match(/qty[:\s]*(\d+)/i);
                 if (qtyMatch) {
                     qty = parseInt(qtyMatch[1]) || 1;
                 }
 
-                // Detect Type
                 let type = 'Bolt';
                 if (/nut/i.test(line)) type = 'Nut';
                 else if (/washer/i.test(line)) type = 'Washer';
 
-                // Detect Size (e.g. M20 or 20)
                 let dia = '';
                 const diaMatch = line.match(/M?(\d+)/i);
                 if (diaMatch) dia = diaMatch[1];
 
-                // Pitch
                 let pitch = '';
                 const pitchMatch = line.match(/P?(\d+\.\d+)/i) || line.match(/x\s*(\d+\.\d+)/i);
                 if (pitchMatch && type !== 'Washer') pitch = pitchMatch[1];
 
-                // Length
                 let length = '';
                 const lgMatch = line.match(/(\d+)\s*(Lg|mm|long)/i) || line.match(/x\s*(\d+)\s*(Gr|8\.8|10\.9|Bolt)?/i);
                 if (lgMatch && type === 'Bolt') {
                     length = lgMatch[1];
                 }
 
-                // Grade / Material
                 let grade = '';
                 if (/hardened/i.test(line)) grade = 'Hardened';
                 else if (/galv/i.test(line)) grade = 'Galv';
@@ -494,6 +484,9 @@
             return `${diaFormatted} Fastener`;
         }
 
+        // Global consolidated data object grouped by category
+        let groupedConsolidatedData = { Bolts: [], Nuts: [], Washers: [] };
+
         function consolidateAndRender() {
             let rawItems = [];
             if (currentTab === 'manual') {
@@ -503,7 +496,7 @@
                 rawItems = parseRawText(text);
             }
 
-            // Consolidate Items by Unique Key (type + dia + pitch + length + grade)
+            // Group map for consolidation
             const map = new Map();
             let totalFasteners = 0;
 
@@ -520,12 +513,19 @@
 
             const consolidatedList = Array.from(map.values());
 
+            // Categorize into Bolts, Nuts, and Washers
+            groupedConsolidatedData = {
+                Bolts: consolidatedList.filter(i => i.type === 'Bolt'),
+                Nuts: consolidatedList.filter(i => i.type === 'Nut'),
+                Washers: consolidatedList.filter(i => i.type === 'Washer')
+            };
+
             // Update Metrics
             document.getElementById('stat-input-count').innerText = rawItems.length;
             document.getElementById('stat-unique-count').innerText = consolidatedList.length;
             document.getElementById('stat-total-qty').innerText = totalFasteners;
 
-            // Render Output Table
+            // Render Output Table with Grouped Section Headers
             const tbody = document.getElementById('output-table-body');
             tbody.innerHTML = '';
 
@@ -538,42 +538,52 @@
                 return;
             }
 
-            consolidatedList.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-zinc-800/50 transition-colors border-b border-brand-border/50";
+            const categories = [
+                { name: 'BOLTS', items: groupedConsolidatedData.Bolts, icon: 'fa-bolt', badgeClass: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+                { name: 'NUTS', items: groupedConsolidatedData.Nuts, icon: 'fa-vector-square', badgeClass: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+                { name: 'WASHERS', items: groupedConsolidatedData.Washers, icon: 'fa-circle-dot', badgeClass: 'bg-purple-500/20 text-purple-400 border-purple-500/30' }
+            ];
 
-                const desc = buildFullDescription(item);
-                
-                // Badge color based on type
-                let typeBadge = '';
-                if (item.type === 'Bolt') typeBadge = '<span class="bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-[10px] font-bold">BOLT</span>';
-                else if (item.type === 'Nut') typeBadge = '<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-bold">NUT</span>';
-                else if (item.type === 'Washer') typeBadge = '<span class="bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded text-[10px] font-bold">WASHER</span>';
+            categories.forEach(cat => {
+                if (cat.items.length > 0) {
+                    // Category Header Row
+                    const headerTr = document.createElement('tr');
+                    headerTr.className = "bg-zinc-900 border-y border-brand-border/80 font-bold text-xs text-zinc-300";
+                    headerTr.innerHTML = `
+                        <td colspan="7" class="py-2 px-3 tracking-wider text-brand-red uppercase bg-zinc-900/90">
+                            <i class="fa-solid ${cat.icon} mr-1.5"></i> ${cat.name} (${cat.items.length})
+                        </td>
+                    `;
+                    tbody.appendChild(headerTr);
 
-                tr.innerHTML = `
-                    <td class="py-3 px-3">${typeBadge}</td>
-                    <td class="py-3 px-3 font-mono font-bold text-white">${formatDia(item.dia)}</td>
-                    <td class="py-3 px-3 font-mono text-zinc-300">${item.type === 'Washer' ? '-' : formatPitch(item.pitch)}</td>
-                    <td class="py-3 px-3 font-mono text-zinc-300">${item.type === 'Bolt' ? formatLength(item.length) : '-'}</td>
-                    <td class="py-3 px-3 font-mono text-zinc-300">${formatGrade(item.grade)}</td>
-                    <td class="py-3 px-3 font-semibold text-brand-red">${desc}</td>
-                    <td class="py-3 px-3 text-right font-black text-brand-green bg-green-950/20 font-mono">${item.qty} OFF</td>
-                `;
+                    cat.items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-zinc-800/50 transition-colors border-b border-brand-border/40";
+                        const desc = buildFullDescription(item);
 
-                tbody.appendChild(tr);
+                        tr.innerHTML = `
+                            <td class="py-2.5 px-3"><span class="${cat.badgeClass} border px-2 py-0.5 rounded text-[10px] font-bold">${item.type.toUpperCase()}</span></td>
+                            <td class="py-2.5 px-3 font-mono font-bold text-white">${formatDia(item.dia)}</td>
+                            <td class="py-2.5 px-3 font-mono text-zinc-300">${item.type === 'Washer' ? '-' : formatPitch(item.pitch)}</td>
+                            <td class="py-2.5 px-3 font-mono text-zinc-300">${item.type === 'Bolt' ? formatLength(item.length) : '-'}</td>
+                            <td class="py-2.5 px-3 font-mono text-zinc-300">${formatGrade(item.grade)}</td>
+                            <td class="py-2.5 px-3 font-semibold text-brand-red">${desc}</td>
+                            <td class="py-2.5 px-3 text-right font-black text-brand-green bg-green-950/20 font-mono">${item.qty} OFF</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
             });
         }
 
         function copyTableForEmail() {
-            const tbody = document.getElementById('output-table-body');
-            const rows = tbody.querySelectorAll('tr');
+            const totalCount = groupedConsolidatedData.Bolts.length + groupedConsolidatedData.Nuts.length + groupedConsolidatedData.Washers.length;
 
-            if (rows.length === 0 || rows[0].innerText.includes('No fastener entries')) {
+            if (totalCount === 0) {
                 showToast('No data to copy!', true);
                 return;
             }
 
-            // Generate clean HTML table with explicit inline styles for Outlook/Gmail
             let html = `
                 <table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; font-family: Arial, sans-serif; font-size: 13px; width: 100%; border: 1px solid #cccccc;">
                     <thead>
@@ -590,32 +600,49 @@
                     <tbody>
             `;
 
-            rows.forEach((row, idx) => {
-                const cols = row.querySelectorAll('td');
-                const bg = (idx % 2 === 0) ? '#ffffff' : '#f9f9f9';
-                html += `
-                    <tr style="background-color: ${bg};">
-                        <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold;">${cols[0].innerText}</td>
-                        <td style="padding: 8px; border: 1px solid #dddddd;">${cols[1].innerText}</td>
-                        <td style="padding: 8px; border: 1px solid #dddddd;">${cols[2].innerText}</td>
-                        <td style="padding: 8px; border: 1px solid #dddddd;">${cols[3].innerText}</td>
-                        <td style="padding: 8px; border: 1px solid #dddddd;">${cols[4].innerText}</td>
-                        <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold; color: #d32f2f;">${cols[5].innerText}</td>
-                        <td style="padding: 8px; border: 1px solid #dddddd; text-align: right; font-weight: bold; color: #2e7d32;">${cols[6].innerText}</td>
-                    </tr>
-                `;
+            const categories = [
+                { name: 'BOLTS', items: groupedConsolidatedData.Bolts },
+                { name: 'NUTS', items: groupedConsolidatedData.Nuts },
+                { name: 'WASHERS', items: groupedConsolidatedData.Washers }
+            ];
+
+            categories.forEach(cat => {
+                if (cat.items.length > 0) {
+                    html += `
+                        <tr style="background-color: #e0e0e0; font-weight: bold; font-size: 12px; color: #111111;">
+                            <td colspan="7" style="padding: 6px 8px; border: 1px solid #cccccc; text-transform: uppercase;">
+                                ${cat.name}
+                            </td>
+                        </tr>
+                    `;
+
+                    cat.items.forEach((item, idx) => {
+                        const bg = (idx % 2 === 0) ? '#ffffff' : '#f9f9f9';
+                        const desc = buildFullDescription(item);
+                        html += `
+                            <tr style="background-color: ${bg};">
+                                <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold;">${item.type.toUpperCase()}</td>
+                                <td style="padding: 8px; border: 1px solid #dddddd;">${formatDia(item.dia)}</td>
+                                <td style="padding: 8px; border: 1px solid #dddddd;">${item.type === 'Washer' ? '-' : formatPitch(item.pitch)}</td>
+                                <td style="padding: 8px; border: 1px solid #dddddd;">${item.type === 'Bolt' ? formatLength(item.length) : '-'}</td>
+                                <td style="padding: 8px; border: 1px solid #dddddd;">${formatGrade(item.grade)}</td>
+                                <td style="padding: 8px; border: 1px solid #dddddd; font-weight: bold; color: #d32f2f;">${desc}</td>
+                                <td style="padding: 8px; border: 1px solid #dddddd; text-align: right; font-weight: bold; color: #2e7d32;">${item.qty} OFF</td>
+                            </tr>
+                        `;
+                    });
+                }
             });
 
             html += `</tbody></table>`;
 
-            // Clipboard write using Blob / HTML
             try {
                 const blobHtml = new Blob([html], { type: 'text/html' });
                 const blobText = new Blob([extractPlainTextFromTable()], { type: 'text/plain' });
                 const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
                 
                 navigator.clipboard.write(data).then(() => {
-                    showToast('Formatted Outlook table copied!');
+                    showToast('Grouped Outlook table copied!');
                 }).catch(() => {
                     fallbackCopy(html);
                 });
@@ -625,14 +652,21 @@
         }
 
         function extractPlainTextFromTable() {
-            const tbody = document.getElementById('output-table-body');
-            const rows = tbody.querySelectorAll('tr');
             let text = "TYPE\tSIZE\tPITCH\tLENGTH\tGRADE\tDESCRIPTION\tQTY\n";
 
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td');
-                if (cols.length >= 7) {
-                    text += `${cols[0].innerText}\t${cols[1].innerText}\t${cols[2].innerText}\t${cols[3].innerText}\t${cols[4].innerText}\t${cols[5].innerText}\t${cols[6].innerText}\n`;
+            const categories = [
+                { name: '=== BOLTS ===', items: groupedConsolidatedData.Bolts },
+                { name: '=== NUTS ===', items: groupedConsolidatedData.Nuts },
+                { name: '=== WASHERS ===', items: groupedConsolidatedData.Washers }
+            ];
+
+            categories.forEach(cat => {
+                if (cat.items.length > 0) {
+                    text += `\n${cat.name}\n`;
+                    cat.items.forEach(item => {
+                        const desc = buildFullDescription(item);
+                        text += `${item.type.toUpperCase()}\t${formatDia(item.dia)}\t${item.type === 'Washer' ? '-' : formatPitch(item.pitch)}\t${item.type === 'Bolt' ? formatLength(item.length) : '-'}\t${formatGrade(item.grade)}\t${desc}\t${item.qty} OFF\n`;
+                    });
                 }
             });
 
@@ -641,7 +675,7 @@
 
         function copyPlainText() {
             const text = extractPlainTextFromTable();
-            executeCopy(text, 'Plain text list copied!');
+            executeCopy(text, 'Grouped plain text list copied!');
         }
 
         function fallbackCopy(text) {
